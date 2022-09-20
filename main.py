@@ -1,4 +1,4 @@
-import csv
+from csv import DictReader
 from sqlalchemy import (
     create_engine,
     MetaData,
@@ -13,15 +13,15 @@ from sqlalchemy import (
 def get_rows(path):
     rows = []
     with open(path, "r") as file:
-        csv_reader = csv.reader(file)
-        header = next(csv_reader)
+        csv_reader = DictReader(file)
+        #header = next(csv_reader)
         for row in csv_reader:
             rows.append(row)
     return rows
 
 
 def create_db():
-    engine = create_engine("sqlite:///zad6_2.db", echo=True)
+    engine = create_engine("sqlite:///zad6_2a.db", echo=True)
     if not (engine.has_table("stations") and engine.has_table("measures")):
         meta = MetaData()
         stations = Table(
@@ -48,13 +48,8 @@ def create_db():
         conn = engine.connect()
         rows_stations = get_rows("sqlalchemy_task/clean_stations.csv")
         rows_measures = get_rows("sqlalchemy_task/clean_measure.csv")
-        for row in rows_stations:
-            conn.execute(stations.insert().values(row))
-        i = 0
-        for row in rows_measures:
-            i += 1
-            row.insert(0, i)
-            conn.execute(measures.insert().values(row))
+        conn.execute(stations.insert(), rows_stations)
+        conn.execute(measures.insert(), rows_measures)
     else:
         conn = engine.connect()
 
