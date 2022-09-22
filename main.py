@@ -57,11 +57,17 @@ if __name__ == "__main__":
     stations = Table("stations", metadata, autoload=True)
     conn = engine.connect()
 
-    result1 = conn.execute("SELECT * FROM stations LIMIT 5").fetchall()
+    result = conn.execute("SELECT * FROM stations LIMIT 5").fetchall()
+    for row in result:
+        print(row)
+
+    s1 = stations.select().where(stations.c.country == "US").limit(5)
+    result1 = conn.execute(s1)
     for row in result1:
         print(row)
 
-    s = stations.select().where(stations.c.country == "US").limit(5)
-    result2 = conn.execute(s)
-    for row in result2:
-        print(row)
+    s2 = stations.delete().where(stations.c.station == "USC00519397")
+    result2 = conn.execute(s2)
+    
+    s3 = stations.update().where(stations.c.station == "USC00513117").values(name='Kaneohe 666')
+    result3 = conn.execute(s3)
