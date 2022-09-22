@@ -11,17 +11,13 @@ from sqlalchemy import (
 
 
 def get_rows(path):
-    rows = []
     with open(path, "r") as file:
         csv_reader = DictReader(file)
-        #header = next(csv_reader)
-        for row in csv_reader:
-            rows.append(row)
-    return rows
+        return list(csv_reader)
 
 
 def create_db():
-    engine = create_engine("sqlite:///zad6_2a.db", echo=True)
+    engine = create_engine("sqlite:///zad6_2_a.db", echo=True)
     if not (engine.has_table("stations") and engine.has_table("measures")):
         meta = MetaData()
         stations = Table(
@@ -50,15 +46,22 @@ def create_db():
         rows_measures = get_rows("sqlalchemy_task/clean_measure.csv")
         conn.execute(stations.insert(), rows_stations)
         conn.execute(measures.insert(), rows_measures)
-    else:
-        conn = engine.connect()
 
-    return conn
+    return engine
 
 
 if __name__ == "__main__":
 
-    conn = create_db()
-    result = conn.execute("SELECT * FROM stations LIMIT 5").fetchall()
-    for row in result:
+    engine = create_db()
+    metadata = MetaData(engine)
+    stations = Table("stations", metadata, autoload=True)
+    conn = engine.connect()
+
+    result1 = conn.execute("SELECT * FROM stations LIMIT 5").fetchall()
+    for row in result1:
+        print(row)
+
+    s = stations.select().where(stations.c.country == "US").limit(5)
+    result2 = conn.execute(s)
+    for row in result2:
         print(row)
